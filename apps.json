@@ -2,13 +2,13 @@
   {
     "name": "나이트크로우",
     "sensortower_android_app_id": "com.wemade.nightcrows",
-    "sensortower_ios_app_id": "6444598069",
+    "sensortower_ios_app_id": "id6444598069",
     "naver_news_keyword": "나이트크로우"
   },
   {
     "name": "레전드오브이미르",
     "sensortower_android_app_id": "com.wemade.ymir",
-    "sensortower_ios_app_id": "6502164351",
+    "sensortower_ios_app_id": "id6502164351",
     "naver_news_keyword": "레전드오브이미르"
   }
 ]
