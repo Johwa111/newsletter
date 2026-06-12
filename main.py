@@ -25,14 +25,14 @@ def get_sensortower_data(app_id, platform, token, start_dt, end_dt):
         d = r.json()
         if isinstance(d, list) and d: return pd.DataFrame(d)
         if isinstance(d, dict) and "data" in d: return pd.DataFrame(d["data"])
+        print(f"⚠️ [{platform}] 예상 외 응답: {d}")
         return pd.DataFrame()
     except Exception as e:
-        print(f"❌ [{platform}] {e}"); return pd.DataFrame()
+        print(f"❌ [{platform}] 오류: {e}"); return pd.DataFrame()
 
 def safe_val(df, col):
     if df.empty or col not in df.columns: return 0
-    v = df[col].iloc[0]
-    return int(str(v)) if pd.notna(v) else 0
+    v = df[col].iloc[0]; return int(str(v)) if pd.notna(v) else 0
 
 def get_naver_news_buzz(keyword, client_id, client_secret, display=10):
     headers = {"X-Naver-Client-Id": client_id, "X-Naver-Client-Secret": client_secret}
@@ -59,28 +59,35 @@ if __name__ == "__main__":
     w2s, w2e = w2_start.strftime("%m/%d"), w2_end.strftime("%m/%d")
 
     for app in apps_config:
-        name       = app.get("name", "Unknown")
-        android_id = app.get("sensortower_android_app_id", "")
-        ios_id     = app.get("sensortower_ios_app_id", "")
-        keyword    = app.get("naver_news_keyword", "")
+        name       = app.get("name","Unknown")
+        android_id = app.get("sensortower_android_app_id","")
+        ios_id     = app.get("sensortower_ios_app_id","")
+        keyword    = app.get("naver_news_keyword","")
+        print(f"\n--- {name} 뉴스레터 생성 시작 ---")
 
-        df_w1_aos = get_sensortower_data(android_id, "android", SENSOR_TOWER_TOKEN, w1_start, w1_end)
-        df_w2_aos = get_sensortower_data(android_id, "android", SENSOR_TOWER_TOKEN, w2_start, w2_end)
-        df_w1_ios = get_sensortower_data(ios_id,     "ios",     SENSOR_TOWER_TOKEN, w1_start, w1_end)
-        df_w2_ios = get_sensortower_data(ios_id,     "ios",     SENSOR_TOWER_TOKEN, w2_start, w2_end)
+        df_w1_aos = get_sensortower_data(android_id,"android",SENSOR_TOWER_TOKEN,w1_start,w1_end)
+        df_w2_aos = get_sensortower_data(android_id,"android",SENSOR_TOWER_TOKEN,w2_start,w2_end)
+        print(f"[DEBUG] {name} AOS 지지난주:\n{df_w1_aos.to_string(index=False) if not df_w1_aos.empty else '데이터 없음'}")
+        print(f"[DEBUG] {name} AOS 지난주:\n{df_w2_aos.to_string(index=False) if not df_w2_aos.empty else '데이터 없음'}")
 
-        total_w1 = pd.DataFrame({"u": [safe_val(df_w1_aos,"u") + safe_val(df_w1_ios,"u")],
-                                  "r": [safe_val(df_w1_aos,"r") + safe_val(df_w1_ios,"r")]})
-        total_w2 = pd.DataFrame({"u": [safe_val(df_w2_aos,"u") + safe_val(df_w2_ios,"u")],
-                                  "r": [safe_val(df_w2_aos,"r") + safe_val(df_w2_ios,"r")]})
+        df_w1_ios = get_sensortower_data(ios_id,"ios",SENSOR_TOWER_TOKEN,w1_start,w1_end)
+        df_w2_ios = get_sensortower_data(ios_id,"ios",SENSOR_TOWER_TOKEN,w2_start,w2_end)
+        print(f"[DEBUG] {name} iOS 지지난주:\n{df_w1_ios.to_string(index=False) if not df_w1_ios.empty else '데이터 없음'}")
+        print(f"[DEBUG] {name} iOS 지난주:\n{df_w2_ios.to_string(index=False) if not df_w2_ios.empty else '데이터 없음'}")
+
+        df_w1_total = pd.DataFrame({"u":[safe_val(df_w1_aos,"u")+safe_val(df_w1_ios,"u")],
+                                    "r":[safe_val(df_w1_aos,"r")+safe_val(df_w1_ios,"r")]})
+        df_w2_total = pd.DataFrame({"u":[safe_val(df_w2_aos,"u")+safe_val(df_w2_ios,"u")],
+                                    "r":[safe_val(df_w2_aos,"r")+safe_val(df_w2_ios,"r")]})
+        print(f"[DEBUG] {name} TOTAL:\nu={safe_val(df_w1_total,'u')}→{safe_val(df_w2_total,'u')}, r={safe_val(df_w1_total,'r')}→{safe_val(df_w2_total,'r')}")
 
         df_buzz = get_naver_news_buzz(keyword, NAVER_CLIENT_ID, NAVER_CLIENT_SECRET)
-
         newsletter = build_newsletter(
             name, w1s, w1e, w2s, w2e,
-            {"지지난주_SensorTower": total_w1, "지난주_SensorTower": total_w2},
-            {"지지난주_SensorTower": df_w1_aos, "지난주_SensorTower": df_w2_aos},
-            {"지지난주_SensorTower": df_w1_ios, "지난주_SensorTower": df_w2_ios},
+            {"지지난주_SensorTower": df_w1_total, "지난주_SensorTower": df_w2_total},
+            {"지지난주_SensorTower": df_w1_aos,   "지난주_SensorTower": df_w2_aos},
+            {"지지난주_SensorTower": df_w1_ios,   "지난주_SensorTower": df_w2_ios},
             df_buzz
         )
         send_to_slack(newsletter, SHARED_SLACK_WEBHOOK_URL, name)
+        print(f"--- {name} 전송 완료 ---")
