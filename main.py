@@ -1,5 +1,7 @@
 import requests
 import pandas as pd
+import os        # ← 이 줄 추가
+import json
 from datetime import timedelta, date
 
 # ============================================================
