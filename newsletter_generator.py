@@ -1,40 +1,44 @@
-import html
-import pandas as pd
+import html, pandas as pd
 
-def build_newsletter(data: dict, app_name: str = "앱",
-                     w1s: str = "", w1e: str = "",
-                     w2s: str = "", w2e: str = "") -> str:
-    df_w1   = data.get("지지난주_SensorTower", pd.DataFrame())
-    df_w2   = data.get("지난주_SensorTower",   pd.DataFrame())
-    df_buzz = data.get("네이버_버즈뉴스",        pd.DataFrame())
+def get_metrics(data):
+    df1 = data.get("지지난주_SensorTower", pd.DataFrame())
+    df2 = data.get("지난주_SensorTower",   pd.DataFrame())
+    def v(df, col):
+        if df.empty or col not in df.columns: return 0
+        x = df[col].iloc[0]; return int(str(x)) if pd.notna(x) else 0
+    u1,r1,u2,r2 = v(df1,"u"),v(df1,"r"),v(df2,"u"),v(df2,"r")
+    return u1, r1, u2, r2, round((u2-u1)/u1*100,1) if u1 else 0, round((r2-r1)/r1*100,1) if r1 else 0
 
-    u1=r1=u2=r2=0
-    if not df_w1.empty and "u" in df_w1.columns:
-        u1 = int(str(df_w1["u"].iloc[0])) if pd.notna(df_w1["u"].iloc[0]) else 0
-        r1 = int(str(df_w1["r"].iloc[0])) if pd.notna(df_w1["r"].iloc[0]) else 0
-    if not df_w2.empty and "u" in df_w2.columns:
-        u2 = int(str(df_w2["u"].iloc[0])) if pd.notna(df_w2["u"].iloc[0]) else 0
-        r2 = int(str(df_w2["r"].iloc[0])) if pd.notna(df_w2["r"].iloc[0]) else 0
-
-    u_chg = round((u2-u1)/u1*100,1) if u1 else 0
-    r_chg = round((r2-r1)/r1*100,1) if r1 else 0
+def build_newsletter(app_name, w1s, w1e, w2s, w2e, data_total, data_aos, data_ios, df_buzz):
+    u1t,r1t,u2t,r2t,uc_t,rc_t = get_metrics(data_total)
+    u1a,r1a,u2a,r2a,uc_a,rc_a = get_metrics(data_aos)
+    u1i,r1i,u2i,r2i,uc_i,rc_i = get_metrics(data_ios)
 
     news = []
     if not df_buzz.empty:
-        for _, row in df_buzz.head(5).iterrows():
+        for _,row in df_buzz.head(5).iterrows():
             t = html.unescape(str(row.get("뉴스_제목","")))
             l = str(row.get("링크",""))
             news.append(f"- <{l}|{t[:80].strip()}>")
     else:
         news.append("- 이번 주 주요 뉴스 소식이 없습니다.")
 
-    return (
-        f"📰 *{app_name} 주간 퍼포먼스 뉴스레터*\n"
-        f"📅 *확인 주차*: {w1s} 주차 → {w2s} 주차\n\n"
-        f"📈 *주요 지표 (WoW)*\n"
-        f"- 다운로드 : {u1:,} 건 ({w1s}~{w1e}) → {u2:,} 건 ({w2s}~{w2e}) ({u_chg:+}%)\n"
-        f"- 매출     : {r1:,} 원 ({w1s}~{w1e}) → {r2:,} 원 ({w2s}~{w2e}) ({r_chg:+}%)\n\n"
-        f"🗞️ *주요 뉴스 버즈 TOP 5*\n"
-        f"{chr(10).join(news)}\n"
-        f"\n\n――――――――――――――――――――\n\n\n"
-    )
+    body  = f"📰 *{app_name} 주간 퍼포먼스 뉴스레터*\n"
+    body += f"📅 *확인 주차*: {w1s} 주차 → {w2s} 주차\n\n"
+    body += f"📊 *TOTAL 주요 지표 (WoW)*\n"
+    body += f"- 다운로드 : {u1t:,} → {u2t:,} 건 ({uc_t:+}%)\n"
+    body += f"- 매출     : {r1t:,} → {r2t:,} 원 ({rc_t:+}%)\n\n"
+
+    if u1a or r1a or u2a or r2a:
+        body += f"🤖 *AOS 주요 지표 (WoW)*\n"
+        body += f"- 다운로드 : {u1a:,} → {u2a:,} 건 ({uc_a:+}%)\n"
+        body += f"- 매출     : {r1a:,} → {r2a:,} 원 ({rc_a:+}%)\n\n"
+
+    if u1i or r1i or u2i or r2i:
+        body += f"🍎 *iOS 주요 지표 (WoW)*\n"
+        body += f"- 다운로드 : {u1i:,} → {u2i:,} 건 ({uc_i:+}%)\n"
+        body += f"- 매출     : {r1i:,} → {r2i:,} 원 ({rc_i:+}%)\n\n"
+
+    body += f"🗞️ *주요 뉴스 버즈 TOP 5*\n{chr(10).join(news)}\n"
+    body += "\n\n――――――――――――――――――――\n\n\n"
+    return body
