@@ -1,0 +1,17 @@
+name: NightCrows Weekly Newsletter
+on:
+  schedule:
+    - cron: '0 0 * * 1'
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: pip install requests pandas openai
+      - run: python main.py
+        env:
+          SENSOR_TOWER_TOKEN:  ${{ secrets.SENSOR_TOWER_TOKEN }}
+          NAVER_CLIENT_ID:     ${{ secrets.NAVER_CLIENT_ID }}
+          NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
+          OPENAI_API_KEY:      ${{ secrets.OPENAI_API_KEY }}
+          SLACK_WEBHOOK_URL:   ${{ secrets.SLACK_WEBHOOK_URL }}
