@@ -3,12 +3,10 @@
     "name": "나이트크로우",
     "sensortower_app_id": "com.wemade.nightcrows",
     "naver_news_keyword": "나이트크로우",
-    "slack_webhook_url": "https://hooks.slack.com/services/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"
   },
   {
     "name": "레전드 오브 이미르",
     "sensortower_app_id": "com.wemade.ymir",
     "naver_news_keyword": "레전드 오브 이미",
-    "slack_webhook_url": "https://hooks.slack.com/services/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"
   }
 ]
