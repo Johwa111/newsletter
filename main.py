@@ -129,19 +129,22 @@ def combine_data(df_w1, df_w2, df_buzz):
 # 6. 실행
 # ============================================================
 if __name__ == "__main__":
-    df_w1   = get_sensortower_data(SENSOR_TOWER_APP_ID, SENSOR_TOWER_TOKEN, w1_start, w1_end)
-    df_w2   = get_sensortower_data(SENSOR_TOWER_APP_ID, SENSOR_TOWER_TOKEN, w2_start, w2_end)
-    df_buzz = get_naver_news_buzz("나이트크로우", NAVER_CLIENT_ID, NAVER_CLIENT_SECRET)
-
-    # 반환된 딕셔너리로 이후 로직에서 자유롭게 활용 가능 🎯
-    data = combine_data(df_w1, df_w2, df_buzz)
-
-    # 예시: 개별 데이터프레임 접근
-    # df = data["지난주_SensorTower"]
-
-
+    import json, os
     from newsletter_generator import build_newsletter
-from slack_sender import send_to_slack
+    from slack_sender import send_to_slack
 
-newsletter = build_newsletter(data)
-send_to_slack(newsletter)
+    SENSOR_TOWER_TOKEN  = os.environ["SENSOR_TOWER_TOKEN"]
+    NAVER_CLIENT_ID     = os.environ["NAVER_CLIENT_ID"]
+    NAVER_CLIENT_SECRET = os.environ["NAVER_CLIENT_SECRET"]
+
+    with open("apps.json", "r", encoding="utf-8") as f:
+        apps_config = json.load(f)
+
+    for app in apps_config:
+        print(f"\n--- {app['name']} 뉴스레터 생성 시작 ---")
+        df_w1   = get_sensortower_data(app["sensortower_app_id"], SENSOR_TOWER_TOKEN, w1_start, w1_end)
+        df_w2   = get_sensortower_data(app["sensortower_app_id"], SENSOR_TOWER_TOKEN, w2_start, w2_end)
+        df_buzz = get_naver_news_buzz(app["naver_news_keyword"], NAVER_CLIENT_ID, NAVER_CLIENT_SECRET)
+        data    = combine_data(df_w1, df_w2, df_buzz)
+        newsletter = build_newsletter(data, app["name"])
+        send_to_slack(newsletter, app["slack_webhook_url"], app["name"])
