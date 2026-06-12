@@ -13,6 +13,11 @@ NAVER_CLIENT_ID     = "aelB2xpk5se2WYTF6rR8"
 NAVER_CLIENT_SECRET = "JpWNI5TJWx"
 NAVER_NEWS_URL      = "https://openapi.naver.com/v1/search/news.json"
 
+SLACK_WEBHOOK_URL = os.environ["SLACK_WEBHOOK_URL"]
+
+for app in apps_config:
+    # ...기존 코드...
+    send_to_slack(newsletter, SLACK_WEBHOOK_URL, app["name"])
 
 # ============================================================
 # 2. 날짜 자동 계산
