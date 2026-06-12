@@ -2,11 +2,11 @@
   {
     "name": "나이트크로우",
     "sensortower_app_id": "com.wemade.nightcrows",
-    "naver_news_keyword": "나이트크로우",
+    "naver_news_keyword": "나이트크로우"
   },
   {
-    "name": "레전드 오브 이미르",
+    "name": "레전드오브이미르",
     "sensortower_app_id": "com.wemade.ymir",
-    "naver_news_keyword": "레전드 오브 이미",
+    "naver_news_keyword": "레전드오브이미르"
   }
 ]
