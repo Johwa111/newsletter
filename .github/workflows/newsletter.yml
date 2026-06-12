@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-     - run: pip install requests pandas
+      - run: pip install requests pandas
       - run: python main.py
         env:
           SENSOR_TOWER_TOKEN:  ${{ secrets.SENSOR_TOWER_TOKEN }}
