@@ -1,6 +1,6 @@
 import html
 
-def build_newsletter(data: dict) -> str:
+def build_newsletter(data: dict, app_name: str = "앱") -> str:
     df_w1   = data["지지난주_SensorTower"]
     df_w2   = data["지난주_SensorTower"]
     df_buzz = data["네이버_버즈뉴스"]
@@ -23,8 +23,8 @@ def build_newsletter(data: dict) -> str:
 
     top_news = "\n".join(top_news_items)
 
-    return f"""
-📰 나이트크로우 주간 퍼포먼스 뉴스레터
+   return f"""
+📰 {app_name} 주간 퍼포먼스 뉴스레터
 
 📈 주요 지표 (WoW)
 - 다운로드 : {u1:,} → {u2:,} 건 ({u_chg:+}%)
