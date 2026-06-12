@@ -7,10 +7,9 @@ def get_metrics(data):
         if df.empty or col not in df.columns: return 0
         x = df[col].iloc[0]; return int(str(x)) if pd.notna(x) else 0
     u1,r1,u2,r2 = v(df1,"u"),v(df1,"r"),v(df2,"u"),v(df2,"r")
-    return u1, r1, u2, r2, round((u2-u1)/u1*100,1) if u1 else 0, round((r2-r1)/r1*100,1) if r1 else 0
+    return u1,r1,u2,r2, round((u2-u1)/u1*100,1) if u1 else 0, round((r2-r1)/r1*100,1) if r1 else 0
 
 def build_newsletter(app_name, w1s, w1e, w2s, w2e, data_total, data_aos, data_ios, df_buzz):
-    u1t,r1t,u2t,r2t,uc_t,rc_t = get_metrics(data_total)
     u1a,r1a,u2a,r2a,uc_a,rc_a = get_metrics(data_aos)
     u1i,r1i,u2i,r2i,uc_i,rc_i = get_metrics(data_ios)
 
@@ -25,9 +24,6 @@ def build_newsletter(app_name, w1s, w1e, w2s, w2e, data_total, data_aos, data_io
 
     body  = f"📰 *{app_name} 주간 퍼포먼스 뉴스레터*\n"
     body += f"📅 *확인 주차*: {w1s} 주차 → {w2s} 주차\n\n"
-    body += f"📊 *TOTAL 주요 지표 (WoW)*\n"
-    body += f"- 다운로드 : {u1t:,} → {u2t:,} 건 ({uc_t:+}%)\n"
-    body += f"- 매출     : {r1t:,} → {r2t:,} 원 ({rc_t:+}%)\n\n"
 
     if u1a or r1a or u2a or r2a:
         body += f"🤖 *AOS 주요 지표 (WoW)*\n"
