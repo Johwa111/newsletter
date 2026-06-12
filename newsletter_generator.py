@@ -23,7 +23,7 @@ def build_newsletter(data: dict, app_name: str = "앱") -> str:
 
     top_news = "\n".join(top_news_items)
 
-   return f"""
+    return f"""
 📰 {app_name} 주간 퍼포먼스 뉴스레터
 
 📈 주요 지표 (WoW)
